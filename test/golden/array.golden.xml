@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="diff.xsl"?>
+<span class="list">
+    <span>
+        [
+    </span>
+    <br/>
+    <span class="same item">
+        <span class="obj">
+            <span>
+                {
+            </span>
+            <br/>
+            <span class="same_key">
+                <span>
+                    "
+                </span>
+                <span class="key">
+                    lastName
+                </span>
+                <span>
+                    ":
+                    <span class="str">
+                        "Smith"
+                    </span>
+                </span>
+            </span>
+            <span class="comma">
+                ,
+            </span>
+            <br/>
+            <span class="same_key">
+                <span>
+                    "
+                </span>
+                <span class="key">
+                    firstName
+                </span>
+                <span>
+                    ":
+                    <span class="str">
+                        "John"
+                    </span>
+                </span>
+            </span>
+            <br/>
+            <span>
+                }
+            </span>
+        </span>
+    </span>
+    <span class="comma">
+        ,
+    </span>
+    <br/>
+    <span class="same item">
+        <span class="obj">
+            <span>
+                {
+            </span>
+            <br/>
+            <span class="same_key">
+                <span>
+                    "
+                </span>
+                <span class="key">
+                    lastName
+                </span>
+                <span>
+                    ":
+                    <span class="str">
+                        "Bower"
+                    </span>
+                </span>
+            </span>
+            <span class="comma">
+                ,
+            </span>
+            <br/>
+            <span class="same_key">
+                <span>
+                    "
+                </span>
+                <span class="key">
+                    firstName
+                </span>
+                <span>
+                    ":
+                    <span class="str">
+                        "Mary"
+                    </span>
+                </span>
+            </span>
+            <br/>
+            <span>
+                }
+            </span>
+        </span>
+    </span>
+    <br/>
+    <span>
+        ]
+    </span>
+</span>

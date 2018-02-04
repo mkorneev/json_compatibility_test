@@ -1,0 +1,9 @@
+{
+  "firstName": "Rachel",
+  "last_name": "Scott",
+  "age": 24,
+  "likesPizza": false,
+  "friends": ["Ann", "John"],
+  "new_list": [1, 2, 3],
+  "start": "2017-11-22T19:56:42+01:00"
+}

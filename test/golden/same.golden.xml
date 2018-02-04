@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="diff.xsl"?>
+<div class="obj">
+    <span>
+        {
+    </span>
+    <div class="obj_content">
+        <span class="same_key">
+            <span>
+                "
+            </span>
+            <span class="key">
+                age
+            </span>
+            <span>
+                ":
+                <span class="same">
+                    <span class="num">
+                        23.0
+                    </span>
+                </span>
+            </span>
+        </span>
+        <span class="comma">
+            ,
+        </span>
+        <br/>
+        <span class="same_key">
+            <span>
+                "
+            </span>
+            <span class="key">
+                firstName
+            </span>
+            <span>
+                ":
+                <span class="same">
+                    <span class="str">
+                        "Rachel"
+                    </span>
+                </span>
+            </span>
+        </span>
+        <span class="comma">
+            ,
+        </span>
+        <br/>
+        <span class="same_key">
+            <span>
+                "
+            </span>
+            <span class="key">
+                friends
+            </span>
+            <span>
+                ":
+                <span class="list">
+                    <span>
+                        [
+                    </span>
+                    <br/>
+                    <span class="same item">
+                        <span class="str">
+                            "John"
+                        </span>
+                    </span>
+                    <span class="comma">
+                        ,
+                    </span>
+                    <br/>
+                    <span class="same item">
+                        <span class="str">
+                            "Mary"
+                        </span>
+                    </span>
+                    <br/>
+                    <span>
+                        ]
+                    </span>
+                </span>
+            </span>
+        </span>
+        <span class="comma">
+            ,
+        </span>
+        <br/>
+        <span class="same_key">
+            <span>
+                "
+            </span>
+            <span class="key">
+                lastName
+            </span>
+            <span>
+                ":
+                <span class="same">
+                    <span class="str">
+                        "Scott"
+                    </span>
+                </span>
+            </span>
+        </span>
+        <span class="comma">
+            ,
+        </span>
+        <br/>
+        <span class="same_key">
+            <span>
+                "
+            </span>
+            <span class="key">
+                likesPizza
+            </span>
+            <span>
+                ":
+                <span class="same">
+                    <span class="bool">
+                        true
+                    </span>
+                </span>
+            </span>
+        </span>
+        <span class="comma">
+            ,
+        </span>
+        <br/>
+        <span class="same_key">
+            <span>
+                "
+            </span>
+            <span class="key">
+                start
+            </span>
+            <span>
+                ":
+                <span class="same">
+                    <span class="str">
+                        "2017-11-22T19:56:42.988000+01:00"
+                    </span>
+                </span>
+            </span>
+        </span>
+    </div>
+    <span>
+        }
+    </span>
+</div>

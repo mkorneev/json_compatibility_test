@@ -1,0 +1,5 @@
+{
+  "age": { "@rel": 0.1 },
+  "start" : { "@time": "1 min"},
+  "likesPizza": "@ignore_value"
+}
