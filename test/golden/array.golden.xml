@@ -1,104 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="diff.xsl"?>
-<span class="list">
-    <span>
-        [
-    </span>
-    <br/>
-    <span class="same item">
-        <span class="obj">
-            <span>
-                {
-            </span>
-            <br/>
-            <span class="same_key">
-                <span>
-                    "
-                </span>
-                <span class="key">
+<?xml-stylesheet type="text/xsl" href="render_json_diff.xsl"?>
+<list>
+    <item class="same">
+        <obj>
+            <pair class="same_key">
+                <key>
                     lastName
-                </span>
-                <span>
-                    ":
-                    <span class="str">
-                        "Smith"
-                    </span>
-                </span>
-            </span>
-            <span class="comma">
-                ,
-            </span>
-            <br/>
-            <span class="same_key">
-                <span>
-                    "
-                </span>
-                <span class="key">
+                </key>
+                <value>
+                    <str>
+                        Smith
+                    </str>
+                </value>
+            </pair>
+            <pair class="same_key">
+                <key>
                     firstName
-                </span>
-                <span>
-                    ":
-                    <span class="str">
-                        "John"
-                    </span>
-                </span>
-            </span>
-            <br/>
-            <span>
-                }
-            </span>
-        </span>
-    </span>
-    <span class="comma">
-        ,
-    </span>
-    <br/>
-    <span class="same item">
-        <span class="obj">
-            <span>
-                {
-            </span>
-            <br/>
-            <span class="same_key">
-                <span>
-                    "
-                </span>
-                <span class="key">
+                </key>
+                <value>
+                    <str>
+                        John
+                    </str>
+                </value>
+            </pair>
+        </obj>
+    </item>
+    <item class="same">
+        <obj>
+            <pair class="same_key">
+                <key>
                     lastName
-                </span>
-                <span>
-                    ":
-                    <span class="str">
-                        "Bower"
-                    </span>
-                </span>
-            </span>
-            <span class="comma">
-                ,
-            </span>
-            <br/>
-            <span class="same_key">
-                <span>
-                    "
-                </span>
-                <span class="key">
+                </key>
+                <value>
+                    <str>
+                        Bower
+                    </str>
+                </value>
+            </pair>
+            <pair class="same_key">
+                <key>
                     firstName
-                </span>
-                <span>
-                    ":
-                    <span class="str">
-                        "Mary"
-                    </span>
-                </span>
-            </span>
-            <br/>
-            <span>
-                }
-            </span>
-        </span>
-    </span>
-    <br/>
-    <span>
-        ]
-    </span>
-</span>
+                </key>
+                <value>
+                    <str>
+                        Mary
+                    </str>
+                </value>
+            </pair>
+        </obj>
+    </item>
+</list>

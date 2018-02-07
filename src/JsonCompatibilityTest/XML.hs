@@ -21,52 +21,28 @@ toXML :: Either String ValueDiff -> Document
 toXML arg =
   let root = case arg of
                Right v -> renderDiff v
-               Left err -> Element "error" M.empty [NodeContent $ T.pack err]
+               Left err -> e "error" [NodeContent $ T.pack err]
   in Document
-       (Prologue [] Nothing [MiscInstruction (Instruction "xml-stylesheet" "type=\"text/xsl\" href=\"diff.xsl\"")])
+       (Prologue [] Nothing [MiscInstruction (Instruction "xml-stylesheet" "type=\"text/xsl\" href=\"render_json_diff.xsl\"")])
        root
        []
 
+e name = Element name M.empty
+el name list = Element name M.empty (map NodeElement list)
+ee name elem = el name [elem]
+
 renderDiff :: ValueDiff -> Element
-renderDiff (SameValue v) = elemClassElem "span" "same" (renderValue v)
-renderDiff (SimilarValue v1 v2) = elemClassNodes "span" "similar" [
-    NodeElement $ elemClassElem "span" "from" (renderValue v1),
-    NodeElement $ elemClassElem "span" "to" (renderValue v2)
-  ]
-renderDiff (ChangedValue v1 v2) = elemClassNodes "span" "changed" [
-    NodeElement $ elemClassElem "span" "from" (renderValue v1),
-    NodeElement $ elemClassElem "span" "to" (renderValue v2)
-  ]
-
-renderDiff (ArrayDiff list) = elemClassNodes "span" "list" [xml|
-  <span>[
-  <br>
-  ^{joinWithComma1 $ map (NodeElement . renderListDiff) list}
-  <br>
-  <span>]
-|]
-
-renderDiff (ObjectDiff pairs) = elemClassNodes "div" "obj" [xml|
-  <span>{
-  <div class="obj_content">
-    ^{joinWithComma $ map renderKeyValueDiff pairs}
-  <span>}
-|]
-
-joinWithComma :: [[Node]] -> [Node]
-joinWithComma = L.intercalate [comma, br]
-  where comma = nodeClassText "span" "comma" ","
-        br = NodeElement $ Element "br" M.empty []
-
-joinWithComma1 :: [Node] -> [Node]
-joinWithComma1 l = joinWithComma $ map (: []) l
+renderDiff (SameValue v) = ee "same" $ renderValue v
+renderDiff (SimilarValue v1 v2) = e "similar" $ renderFromTo v1 v2
+renderDiff (ChangedValue v1 v2) = e "changed" $ renderFromTo v1 v2
+renderDiff (ArrayDiff list) = el "list" $ map renderListDiff list
+renderDiff (ObjectDiff pairs) = e "obj_diff" $ concatMap renderKeyValueDiff pairs
 
 renderKeyValueDiff :: KeyValueDiff -> [Node]
 renderKeyValueDiff (SameKey k v) = [xml|
-    <span class="same_key">
-      <span>"
-      <span class="key">#{k}
-      <span>": #
+    <pair class="same_key">
+      <key>#{k}
+      <value>
         ^{[NodeElement $ renderDiff v]}
 |]
 
@@ -76,64 +52,48 @@ renderKeyValueDiff (AllowedAddedKey k v) = renderKey "allowed_added_key" k v
 renderKeyValueDiff (AllowedRemovedKey k v) = renderKey "allowed_removed_key" k v
 
 renderKey cls k v = [xml|
-    <span class="#{cls}">
-      <span>"
-      <span class="key">#{k}
-      <span>": #
-        ^{[NodeElement $ renderValue v]}
+    <pair class="#{cls}">
+      <key>#{k}
+      <value>^{[NodeElement $ renderValue v]}
 |]
 
-nodeClassText name cls text = NodeElement $ elemClassText name cls text
-elemClassText name cls text = Element name (M.singleton "class" cls) [NodeContent text]
+elemText name text = e name [NodeContent text]
 
 nodeClassElem name cls elem = NodeElement $ elemClassElem name cls elem
 elemClassNodes name cls = Element name (M.singleton "class" cls)
 elemClassElem name cls elem = Element name (M.singleton "class" cls) [NodeElement elem]
 
-
 renderListDiff :: ListValueDiff -> Element
-renderListDiff (SameItem i) = elemClassElem "span" "same item" $ renderValue i
-renderListDiff (SimilarItem a b) = elemClassNodes "span" "similar item" [
-                                       NodeElement $ elemClassElem "span" "from" (renderValue a),
-                                       NodeElement $ elemClassElem "span" "to" (renderValue b)
-                                     ]
-renderListDiff (AddedItem i) = elemClassElem "span" "added item"  $ renderValue i
-renderListDiff (RemovedItem i) = elemClassElem "span" "removed item"  $renderValue i
-renderListDiff (AllowedAddedItem i) = elemClassElem "span" "allowed_added item"  $ renderValue i
-renderListDiff (AllowedRemovedItem i) = elemClassElem "span" "allowed_removed item"  $renderValue i
-renderListDiff (SimilarObject l) = elemClassElem "span" "similar item" $ renderDiff (ObjectDiff l)
+renderListDiff (SameItem i) = elemClassElem "item" "same" $ renderValue i
+renderListDiff (SimilarItem a b) = elemClassNodes "item" "similar" $ renderFromTo a b
+renderListDiff (AddedItem i) = elemClassElem "item" "added"  $ renderValue i
+renderListDiff (RemovedItem i) = elemClassElem "item" "removed"  $renderValue i
+renderListDiff (AllowedAddedItem i) = elemClassElem "item" "allowed_added"  $ renderValue i
+renderListDiff (AllowedRemovedItem i) = elemClassElem "item" "allowed_removed"  $renderValue i
+renderListDiff (SimilarObject l) = elemClassElem "item" "similar" $ renderDiff (ObjectDiff l)
 
 renderValue :: Value -> Element
-renderValue Null = elemClassText "span" "null" "null"
-renderValue (Bool b) = elemClassText "span" "bool" (T.pack (if b then "true" else "false"))
-renderValue (Number n) = elemClassText "span" "num" $ (T.pack . show) n
-renderValue (String s) = elemClassText "span" "str" $ (T.pack . show) s
-renderValue (Array vector) =
-  elemClassNodes "span" "list" $
-  [xml|
-  <span>[
-  <br>
-  ^{renderList vector}
-  <br>
-  <span>]
-|]
-  where
-    renderList = joinWithComma1 . V.toList . V.map (nodeClassElem "span" "item" . renderValue)
-
-renderValue (Object hashMap) = elemClassNodes "span" "obj" $ [xml|
-  <span>{
-  <br>
-  ^{joinWithComma $ map renderPair $ toList hashMap}
-  <br>
-  <span>}
-|]
+renderValue Null = e "null" []
+renderValue (Bool b) = elemText "bool" (T.pack (if b then "true" else "false"))
+renderValue (Number n) = elemText "num" $ (T.pack . show) n
+renderValue (String s) = elemText "str" s
+renderValue (Array vector) = el "list" $ map (ee "item" . renderValue) $ V.toList vector
+renderValue (Object hashMap) = e "obj" $ concatMap renderPair (toList hashMap)
 
 
 renderPair :: (T.Text, Value) -> [Node]
 renderPair (k, v) = [xml|
-   <span class="same_key">
-     <span>"
-     <span class="key">#{k}
-     <span>": #
+   <pair class="same_key">
+     <key>#{k}
+     <value>
        ^{[NodeElement $ renderValue v]}
 |]
+
+renderFromTo :: Value -> Value -> [Node]
+renderFromTo a b = [xml|
+    <from>
+      ^{[NodeElement $ renderValue a]}
+    <to>
+      ^{[NodeElement $ renderValue b]}
+  |]
+
