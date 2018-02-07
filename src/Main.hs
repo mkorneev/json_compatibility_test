@@ -12,7 +12,7 @@ import           System.Exit
 import           Data.Version
 import           Paths_json_compatibility_test
 import qualified Text.XML                      as XML
-import qualified Data.ByteString.Lazy.Char8    as B
+import qualified Data.ByteString.Lazy          as LS
 
 differenceFoundExitCode = 1
 
@@ -44,13 +44,15 @@ main = do
        then withArgs ["--help"]
        else id) $
     cmdArgs appOptions
-  oldFile <- (decode . B.pack) <$> Prelude.readFile (oldFile opts)
-  newFile <- (decode . B.pack) <$> Prelude.readFile (newFile opts)
-  specFile <- (decode . B.pack) <$> Prelude.readFile (specFile opts)
+  oldFile <- eitherDecode <$> LS.readFile (oldFile opts)
+  newFile <- eitherDecode  <$> LS.readFile (newFile opts)
+  specFile <- eitherDecode  <$> LS.readFile (specFile opts)
   case liftM3 diffJsonAsXml oldFile newFile specFile of
-    Just (doc, theSame) -> do
+    Right (doc, theSame) -> do
       XML.writeFile XML.def (outFile opts) doc
       if theSame
         then return exitSuccess
         else return exitFailure differenceFoundExitCode
-    Nothing -> return exitFailure parseErrorExitCode
+    Left err -> do
+      print err
+      return exitFailure parseErrorExitCode

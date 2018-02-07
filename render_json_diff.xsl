@@ -111,12 +111,15 @@
     </xsl:template>
 
     <xsl:template match="item">
-        <xsl:apply-templates/>
+        <span>
+            <xsl:attribute name="class"><xsl:value-of select="@class"/></xsl:attribute>
+            <xsl:apply-templates/>
+        </span>
     </xsl:template>
 
     <xsl:template match="obj">
         <span>{</span>
-        <div class="obj">
+        <div class="object">
             <xsl:for-each select="pair">
                 <xsl:apply-templates select="."/>
                 <xsl:if test="position() != last()">
