@@ -45,8 +45,8 @@ main = do
        else id) $
     cmdArgs appOptions
   oldFile <- eitherDecode <$> LS.readFile (oldFile opts)
-  newFile <- eitherDecode  <$> LS.readFile (newFile opts)
-  specFile <- eitherDecode  <$> LS.readFile (specFile opts)
+  newFile <- eitherDecode <$> LS.readFile (newFile opts)
+  specFile <- eitherDecode <$> LS.readFile (specFile opts)
   case liftM3 diffJsonAsXml oldFile newFile specFile of
     Right (doc, theSame) -> do
       XML.writeFile XML.def (outFile opts) doc

@@ -16,6 +16,8 @@ import           Data.Text         (Text, unpack)
 import           Text.Printf
 import           Data.List
 import           Control.Applicative
+import           Data.Maybe
+import           Data.Bifunctor
 
 data Spec
   = Exact
@@ -24,7 +26,7 @@ data Spec
   | Absolute Scientific
   | TimeDiff NominalDiffTime
   | ObjectSpec (H.HashMap Text Spec)
-  | ArraySpec (Maybe Text) (Maybe Text)
+  | ArraySpec (Maybe Text) (Maybe Text) Spec
 
 data Equality = Equal | Similar | Different
 
@@ -63,9 +65,17 @@ isEqual (TimeDiff tolerance) (String a) (String b)
 isEqual (TimeDiff tolerance) a b =
   Left $ printf "Time tolerance is defined only for timestamps. Applied for %s and %s" (show a) (show b)
 
-isEqual (ArraySpec indexBy compareBy) a b = undefined
+isEqual (ArraySpec indexBy (Just field) _) (Object a) (Object b)
+  | a == b = Right Equal
+  | extractField a == extractField b = Right Similar
+  | otherwise = Right Different
+    where
+      extractField obj = fromMaybe Null $ H.lookup field obj
 
-isEqual (ObjectSpec _) _ _ = undefined
+isEqual (ArraySpec indexBy Nothing spec) a@(Object _) b@(Object _) = isEqual spec a b
+isEqual (ArraySpec indexBy compareBy spec) a b = isEqual spec a b
+
+isEqual (ObjectSpec _) _ _ = Right Similar
 
 type JPath = [Text]
 showJPath :: JPath -> String
@@ -88,9 +98,9 @@ parseSpec path (Object spec)
     specKeys = filter (\k -> head (unpack k) == '@') (H.keys spec)
 
 parseSpec path (Array v)
-  | [Object arraySpec, Object itemSpec] <- V.toList v =
+  | [Object arraySpec, itemSpec] <- V.toList v =
     let indexBy:compareBy:_ = fmap (\k -> H.lookup k arraySpec >>= getText) ["@index_by", "@compare_by"]
-    in Right $ ArraySpec indexBy compareBy
+    in second (ArraySpec indexBy compareBy) $ parseSpec (path ++ ["[]"]) itemSpec
   | otherwise = Left "Arrays in the spec should contain exactly two objects (array spec and item spec)"
 parseSpec path (Number _) = Left "Cannot use numbers as spec values"
 parseSpec path (Bool _) = Left "Cannot use bools as spec values"

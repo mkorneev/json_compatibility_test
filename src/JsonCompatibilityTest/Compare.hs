@@ -43,6 +43,7 @@ isSimilar d =
             SameKey k v -> isSimilar v
 
 diffJson :: Value -> Value -> Spec -> Either String ValueDiff
+diffJson left@(Object _) right@(Object _) (ArraySpec _ _ spec) = diffJson left right spec
 diffJson (Object left) (Object right) spec =
   case objDiff of
     Right list -> Right $ ObjectDiff list
@@ -51,8 +52,8 @@ diffJson (Object left) (Object right) spec =
     leftKeys = sortBy (compare `on` fst) $ H.toList left
     rightKeys = sortBy (compare `on` fst) $ H.toList right
     objDiff = sequence $ diffSortedPairs leftKeys rightKeys spec
-diffJson (Array a) (Array b) (ArraySpec (Just indexField) compareBy) =
-  Right $ ArrayDiff $ diffLists sortedA sortedB
+diffJson (Array a) (Array b) spec@(ArraySpec (Just indexField) compareBy _) =
+  second ArrayDiff $ sequence $ diffLists sortedA sortedB spec
   where
     extractField v =
       case v of
@@ -60,13 +61,13 @@ diffJson (Array a) (Array b) (ArraySpec (Just indexField) compareBy) =
         _ -> Null
     sortedA = sortBy (\v1 v2 -> compareValues (extractField v1) (extractField v2)) $ V.toList a
     sortedB = sortBy (\v1 v2 -> compareValues (extractField v1) (extractField v2)) $ V.toList b
-diffJson (Array a) (Array b) _ = Right $ ArrayDiff $ diffLists (V.toList a) (V.toList b)
+diffJson (Array a) (Array b) spec = second ArrayDiff $ sequence $ diffLists (V.toList a) (V.toList b) spec
 diffJson a b spec =
   case isEqual spec a b of
     Right Equal     -> Right $ SameValue a
     Right Similar   -> Right $ SimilarValue a b
     Right Different -> Right $ ChangedValue a b
-    Left err    -> Left err
+    Left err        -> Left err
 
 
 compareValues :: Value -> Value -> Ordering
@@ -74,14 +75,20 @@ compareValues (String a) (String b) = compare a b
 compareValues (Number a) (Number b) = compare a b
 compareValues _ _ = EQ
 
+toSimilar (ObjectDiff list) = SimilarObject list
 
-diffLists :: [Value] -> [Value] -> [ListValueDiff]
-diffLists [] [] = []
-diffLists [] (added:rest) = AddedItem added : diffLists [] rest
-diffLists (removed:rest) [] = RemovedItem removed : diffLists rest []
-diffLists (v1:rest1) (v2:rest2)
-  | v1 == v2 = SameItem v1 : diffLists rest1 rest2
-  | otherwise = RemovedItem v1 : diffLists rest1 (v2 : rest2)
+diffLists :: [Value] -> [Value] -> Spec -> [Either String ListValueDiff]
+diffLists [] [] _ = []
+diffLists [] (added:rest) spec = Right (AddedItem added) : diffLists [] rest spec
+diffLists (removed:rest) [] spec = Right (RemovedItem removed) : diffLists rest [] spec
+diffLists (v1:rest1) (v2:rest2) spec =
+  case isEqual spec v1 v2 of
+    Right Equal     -> Right (SameItem v1) : diffLists rest1 rest2 spec
+    Right Similar   -> case v1 of
+                         Object _ -> second toSimilar (diffJson v1 v2 spec) : diffLists rest1 rest2 spec
+                         _ -> Right (SimilarItem v1 v2) : diffLists rest1 rest2 spec
+    Right Different -> Right (RemovedItem v1) : diffLists rest1 (v2 : rest2) spec
+    Left err        -> Left err : diffLists rest1 rest2 spec
 
 
 diffSortedPairs :: [(Text, Value)] -> [(Text, Value)] -> Spec -> [Either String KeyValueDiff]

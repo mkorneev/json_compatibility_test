@@ -10,6 +10,7 @@ import           Data.Aeson
 import           Text.Hamlet.XML
 import           Text.RawString.QQ
 import           Text.XML
+import           Data.Scientific
 
 import           Data.HashMap.Strict (toList)
 import qualified Data.List           as L
@@ -75,7 +76,7 @@ renderListDiff (SimilarObject l) = elemClassElem "item" "similar" $ renderDiff (
 renderValue :: Value -> Element
 renderValue Null = e "null" []
 renderValue (Bool b) = elemText "bool" (T.pack (if b then "true" else "false"))
-renderValue (Number n) = elemText "num" $ (T.pack . show) n
+renderValue (Number n) = elemText "num" $ T.pack $ formatScientific Fixed Nothing n
 renderValue (String s) = elemText "str" s
 renderValue (Array vector) = el "list" $ map (ee "item" . renderValue) $ V.toList vector
 renderValue (Object hashMap) = e "obj" $ concatMap renderPair (toList hashMap)

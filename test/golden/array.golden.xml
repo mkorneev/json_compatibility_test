@@ -1,52 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="render_json_diff.xsl"?>
+<?xml-stylesheet type="text/xsl" href="../render_json_diff.xsl"?>
 <list>
-    <item class="same">
-        <obj>
-            <pair class="same_key">
-                <key>
-                    lastName
-                </key>
-                <value>
-                    <str>
-                        Smith
-                    </str>
-                </value>
-            </pair>
+    <item class="similar">
+        <obj_diff>
             <pair class="same_key">
                 <key>
                     firstName
                 </key>
                 <value>
-                    <str>
-                        John
-                    </str>
+                    <same>
+                        <str>
+                            John
+                        </str>
+                    </same>
                 </value>
             </pair>
-        </obj>
+            <pair class="same_key">
+                <key>
+                    lastName
+                </key>
+                <value>
+                    <same>
+                        <str>
+                            Smith
+                        </str>
+                    </same>
+                </value>
+            </pair>
+        </obj_diff>
     </item>
-    <item class="same">
-        <obj>
-            <pair class="same_key">
-                <key>
-                    lastName
-                </key>
-                <value>
-                    <str>
-                        Bower
-                    </str>
-                </value>
-            </pair>
+    <item class="similar">
+        <obj_diff>
             <pair class="same_key">
                 <key>
                     firstName
                 </key>
                 <value>
-                    <str>
-                        Mary
-                    </str>
+                    <same>
+                        <str>
+                            Mary
+                        </str>
+                    </same>
                 </value>
             </pair>
-        </obj>
+            <pair class="same_key">
+                <key>
+                    lastName
+                </key>
+                <value>
+                    <same>
+                        <str>
+                            Bower
+                        </str>
+                    </same>
+                </value>
+            </pair>
+        </obj_diff>
     </item>
 </list>
