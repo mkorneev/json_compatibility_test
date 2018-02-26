@@ -33,6 +33,18 @@ tests = TestList [
           (decode [r|{"a": [1, 2, 3]}|])
           (decode [r|{"a": [1, 2.1, 4]}|]))
 
+  , TestCase $ assertEqual "merge lists 1"
+      ["A", "B", "D"]
+      (mergeLists ["A", "D"] ["B", "D"])
+
+  , TestCase $ assertEqual "merge lists 2"
+      ["B", "D", "A"]
+      (mergeLists ["B", "D"] ["D", "B", "A"])
+
+  , TestCase $ assertEqual "merge lists 3"
+      ["E", "A", "B", "C"]
+      (mergeLists ["A", "B", "C"] ["E", "C", "B", "A"])
+
   ]
 
 main :: IO Counts

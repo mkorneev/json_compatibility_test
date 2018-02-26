@@ -13,9 +13,10 @@ import qualified Data.Text         as T
 import qualified Data.Vector       as V
 
 import           Data.Function     (on)
-import           Data.List         (sortBy)
+import           Data.List         (sortBy, find, elemIndex, delete)
 import           Data.Bifunctor
 import           Data.Maybe
+import           Data.Ord
 
 isSimilar :: ValueDiff -> Bool
 isSimilar d =
@@ -55,8 +56,8 @@ diffJson (Object left) (Object right) spec =
 diffJson (Array a) (Array b) spec@(ArraySpec (Just indexField) compareBy _) =
   second ArrayDiff $ sequence $ diffLists sortedA sortedB spec
   where
-    sortedA = sortBy (\v1 v2 -> compareValuesByField indexField v1 v2) $ V.toList a
-    sortedB = sortBy (\v1 v2 -> compareValuesByField indexField v1 v2) $ V.toList b
+    sortedA = sortBy (compareValuesByField indexField) $ V.toList a
+    sortedB = sortBy (compareValuesByField indexField) $ V.toList b
 diffJson (Array a) (Array b) spec = second ArrayDiff $ sequence $ diffLists (V.toList a) (V.toList b) spec
 diffJson a b spec =
   case isEqual spec a b of
@@ -65,6 +66,19 @@ diffJson a b spec =
     Right Different -> Right $ ChangedValue a b
     Left err        -> Left err
 
+
+compareFieldNames :: [Text] -> [Text] -> Text -> Text -> Ordering
+compareFieldNames left right = comparing (\x -> elemIndex x (mergeLists left right))
+
+mergeLists :: [Text] -> [Text]  -> [Text]
+mergeLists [] [] = []
+mergeLists xs [] = xs
+mergeLists [] ys = ys
+mergeLists left@(x:xs) right@(y:ys)
+  | x == y = x : mergeLists xs ys
+  | x `notElem` ys = x : mergeLists xs right
+  | y `notElem` xs = y : mergeLists left ys
+  | otherwise = x : mergeLists xs (delete x right)
 
 extractField :: Text -> Value -> Value
 extractField indexField v =
