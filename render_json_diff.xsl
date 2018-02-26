@@ -14,19 +14,17 @@
                     padding-left: 20px;
                 }
                 .added, .added_key, .changed .to {
-                    color: green;
-                    font-weight: bold;
+                    color: orange;
                 }
                 .allowed_added, .allowed_added_key, .similar .to {
-                    color: green;
+                    color: blue;
                 }
                 .removed, .removed_key, .changed .from {
                     color: red;
-                    font-weight: bold;
                     text-decoration: line-through;
                 }
                 .allowed_removed, .allowed_removed_key, .similar .from {
-                    color: red;
+                    color: grey;
                     text-decoration: line-through;
                 }
                 </style>

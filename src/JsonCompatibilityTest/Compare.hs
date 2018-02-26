@@ -55,12 +55,8 @@ diffJson (Object left) (Object right) spec =
 diffJson (Array a) (Array b) spec@(ArraySpec (Just indexField) compareBy _) =
   second ArrayDiff $ sequence $ diffLists sortedA sortedB spec
   where
-    extractField v =
-      case v of
-        Object obj -> fromMaybe Null $ H.lookup indexField obj
-        _ -> Null
-    sortedA = sortBy (\v1 v2 -> compareValues (extractField v1) (extractField v2)) $ V.toList a
-    sortedB = sortBy (\v1 v2 -> compareValues (extractField v1) (extractField v2)) $ V.toList b
+    sortedA = sortBy (\v1 v2 -> compareValuesByField indexField v1 v2) $ V.toList a
+    sortedB = sortBy (\v1 v2 -> compareValuesByField indexField v1 v2) $ V.toList b
 diffJson (Array a) (Array b) spec = second ArrayDiff $ sequence $ diffLists (V.toList a) (V.toList b) spec
 diffJson a b spec =
   case isEqual spec a b of
@@ -70,12 +66,23 @@ diffJson a b spec =
     Left err        -> Left err
 
 
+extractField :: Text -> Value -> Value
+extractField indexField v =
+  case v of
+    Object obj -> fromMaybe Null $ H.lookup indexField obj
+    _ -> Null
+
 compareValues :: Value -> Value -> Ordering
 compareValues (String a) (String b) = compare a b
 compareValues (Number a) (Number b) = compare a b
 compareValues _ _ = EQ
 
+compareValuesByField :: Text -> Value -> Value -> Ordering
+compareValuesByField field v1 v2 = compareValues (extractField field v1) (extractField field v2)
+
+
 toSimilar (ObjectDiff list) = SimilarObject list
+toSimilar _ = undefined
 
 diffLists :: [Value] -> [Value] -> Spec -> [Either String ListValueDiff]
 diffLists [] [] _ = []
@@ -87,7 +94,13 @@ diffLists (v1:rest1) (v2:rest2) spec =
     Right Similar   -> case v1 of
                          Object _ -> second toSimilar (diffJson v1 v2 spec) : diffLists rest1 rest2 spec
                          _ -> Right (SimilarItem v1 v2) : diffLists rest1 rest2 spec
-    Right Different -> Right (RemovedItem v1) : diffLists rest1 (v2 : rest2) spec
+    Right Different ->
+      case spec of
+        spec@(ArraySpec (Just indexField) _ _) -> case compareValuesByField indexField v1 v2 of
+          LT -> Right (RemovedItem v1) : diffLists rest1 (v2 : rest2) spec
+          EQ -> Right (RemovedItem v1) : diffLists rest1 (v2 : rest2) spec
+          GT -> Right (AddedItem v2) : diffLists (v1 : rest1) rest2 spec
+        _ -> Right (RemovedItem v1) : diffLists rest1 (v2 : rest2) spec
     Left err        -> Left err : diffLists rest1 rest2 spec
 
 

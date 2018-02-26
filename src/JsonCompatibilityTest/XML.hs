@@ -24,7 +24,7 @@ toXML arg =
                Right v -> renderDiff v
                Left err -> e "error" [NodeContent $ T.pack err]
   in Document
-       (Prologue [] Nothing [MiscInstruction (Instruction "xml-stylesheet" "type=\"text/xsl\" href=\"render_json_diff.xsl\"")])
+       (Prologue [] Nothing [MiscInstruction (Instruction "xml-stylesheet" "type=\"text/xsl\" href=\"https://raw.githubusercontent.com/mkorneev/json_compatibility_test/master/render_json_diff.xsl\"")])
        root
        []
 

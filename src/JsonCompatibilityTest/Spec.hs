@@ -39,6 +39,10 @@ isEqual IgnoreValue a b
   | a == b = Right Equal
   | otherwise = Right Similar
 
+isEqual _ Null Null = Right Equal
+isEqual _ a Null = Right Different
+isEqual _ Null b = Right Different
+
 isEqual (Absolute tolerance) (Number a) (Number b)
   | a == b = Right Equal
   | otherwise = Right $ if abs (a - b) <= tolerance then Similar else Different

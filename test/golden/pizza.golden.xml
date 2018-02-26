@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="render_json_diff.xsl"?>
+<?xml-stylesheet type="text/xsl" href="https://raw.githubusercontent.com/mkorneev/json_compatibility_test/master/render_json_diff.xsl"?>
 <obj_diff>
     <pair class="same_key">
         <key>
