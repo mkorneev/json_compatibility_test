@@ -17,6 +17,8 @@ import qualified Data.List           as L
 import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.Vector         as V
+import           Data.Function       (on)
+
 
 toXML :: Either String ValueDiff -> Document
 toXML arg =
@@ -79,7 +81,7 @@ renderValue (Bool b) = elemText "bool" (T.pack (if b then "true" else "false"))
 renderValue (Number n) = elemText "num" $ T.pack $ formatScientific Fixed Nothing n
 renderValue (String s) = elemText "str" s
 renderValue (Array vector) = el "list" $ map (ee "item" . renderValue) $ V.toList vector
-renderValue (Object hashMap) = e "obj" $ concatMap renderPair (toList hashMap)
+renderValue (Object hashMap) = e "obj" $ concatMap renderPair $ L.sortBy (compare `on` fst) (toList hashMap)
 
 
 renderPair :: (T.Text, Value) -> [Node]

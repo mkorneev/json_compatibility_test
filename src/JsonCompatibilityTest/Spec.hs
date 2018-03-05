@@ -26,7 +26,7 @@ data Spec
   | Absolute Scientific
   | TimeDiff NominalDiffTime
   | ObjectSpec (H.HashMap Text Spec)
-  | ArraySpec (Maybe Text) (Maybe Text) Spec
+  | ArraySpec (Maybe [Text]) (Maybe [Text]) Spec
 
 data Equality = Equal | Similar | Different
 
@@ -69,12 +69,12 @@ isEqual (TimeDiff tolerance) (String a) (String b)
 isEqual (TimeDiff tolerance) a b =
   Left $ printf "Time tolerance is defined only for timestamps. Applied for %s and %s" (show a) (show b)
 
-isEqual (ArraySpec indexBy (Just field) _) (Object a) (Object b)
+isEqual (ArraySpec indexBy (Just fields) _) (Object a) (Object b)
   | a == b = Right Equal
-  | extractField a == extractField b = Right Similar
+  | extractFields a == extractFields b = Right Similar
   | otherwise = Right Different
     where
-      extractField obj = fromMaybe Null $ H.lookup field obj
+      extractFields obj = map (\f -> fromMaybe Null $ H.lookup f obj) fields
 
 isEqual (ArraySpec indexBy Nothing spec) a@(Object _) b@(Object _) = isEqual spec a b
 isEqual (ArraySpec indexBy compareBy spec) a b = isEqual spec a b
@@ -103,7 +103,7 @@ parseSpec path (Object spec)
 
 parseSpec path (Array v)
   | [Object arraySpec, itemSpec] <- V.toList v =
-    let indexBy:compareBy:_ = fmap (\k -> H.lookup k arraySpec >>= getText) ["@index_by", "@compare_by"]
+    let indexBy:compareBy:_ = fmap (\k -> H.lookup k arraySpec >>= getList) ["@index_by", "@compare_by"]
     in second (ArraySpec indexBy compareBy) $ parseSpec (path ++ ["[]"]) itemSpec
   | otherwise = Left "Arrays in the spec should contain exactly two objects (array spec and item spec)"
 parseSpec path (Number _) = Left "Cannot use numbers as spec values"
@@ -115,3 +115,8 @@ parseSpec path (String s) = Left $ printf "Cannot recognize spec value '%s' at /
 getText :: Value -> Maybe Text
 getText (String t) = Just t
 getText _ = Nothing
+
+getList :: Value -> Maybe [Text]
+getList (String t) = Just [t]
+getList (Array a) = mapM getText (V.toList a)
+getList _ = Nothing

@@ -53,11 +53,11 @@ diffJson (Object left) (Object right) spec =
     leftKeys = sortBy (compare `on` fst) $ H.toList left
     rightKeys = sortBy (compare `on` fst) $ H.toList right
     objDiff = sequence $ diffSortedPairs leftKeys rightKeys spec
-diffJson (Array a) (Array b) spec@(ArraySpec (Just indexField) compareBy _) =
+diffJson (Array a) (Array b) spec@(ArraySpec (Just indexFields) compareBy _) =
   second ArrayDiff $ sequence $ diffLists sortedA sortedB spec
   where
-    sortedA = sortBy (compareValuesByField indexField) $ V.toList a
-    sortedB = sortBy (compareValuesByField indexField) $ V.toList b
+    sortedA = sortBy (compareValuesByFields indexFields) $ V.toList a
+    sortedB = sortBy (compareValuesByFields indexFields) $ V.toList b
 diffJson (Array a) (Array b) spec = second ArrayDiff $ sequence $ diffLists (V.toList a) (V.toList b) spec
 diffJson a b spec =
   case isEqual spec a b of
@@ -80,19 +80,22 @@ mergeLists left@(x:xs) right@(y:ys)
   | y `notElem` xs = y : mergeLists left ys
   | otherwise = x : mergeLists xs (delete x right)
 
-extractField :: Text -> Value -> Value
-extractField indexField v =
+extractFields :: [Text] -> Value -> [Value]
+extractFields indexFields v =
   case v of
-    Object obj -> fromMaybe Null $ H.lookup indexField obj
-    _ -> Null
+    Object obj -> map (\f -> fromMaybe Null $ H.lookup f obj) indexFields
+    _ -> [Null]
 
 compareValues :: Value -> Value -> Ordering
 compareValues (String a) (String b) = compare a b
 compareValues (Number a) (Number b) = compare a b
 compareValues _ _ = EQ
 
-compareValuesByField :: Text -> Value -> Value -> Ordering
-compareValuesByField field v1 v2 = compareValues (extractField field v1) (extractField field v2)
+compareValueLists :: [Value] -> [Value] -> Ordering
+compareValueLists a b = mconcat $ zipWith compareValues a b
+
+compareValuesByFields :: [Text] -> Value -> Value -> Ordering
+compareValuesByFields fields v1 v2 = compareValueLists (extractFields fields v1) (extractFields fields v2)
 
 
 toSimilar (ObjectDiff list) = SimilarObject list
@@ -110,7 +113,7 @@ diffLists (v1:rest1) (v2:rest2) spec =
                          _ -> Right (SimilarItem v1 v2) : diffLists rest1 rest2 spec
     Right Different ->
       case spec of
-        spec@(ArraySpec (Just indexField) _ _) -> case compareValuesByField indexField v1 v2 of
+        spec@(ArraySpec (Just indexFields) _ _) -> case compareValuesByFields indexFields v1 v2 of
           LT -> Right (RemovedItem v1) : diffLists rest1 (v2 : rest2) spec
           EQ -> Right (RemovedItem v1) : diffLists rest1 (v2 : rest2) spec
           GT -> Right (AddedItem v2) : diffLists (v1 : rest1) rest2 spec
