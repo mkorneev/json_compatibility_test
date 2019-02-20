@@ -28,7 +28,8 @@ data Spec
   | ObjectSpec (H.HashMap Text Spec)
   | ArraySpec (Maybe [Text]) (Maybe [Text]) Spec
 
-data Equality = Equal | Similar | Different
+data Equality = Equal | Similar | Different deriving (Eq, Ord)
+
 
 isEqual :: Spec -> Value -> Value -> Either String Equality
 isEqual Exact a b
@@ -69,12 +70,13 @@ isEqual (TimeDiff tolerance) (String a) (String b)
 isEqual (TimeDiff tolerance) a b =
   Left $ printf "Time tolerance is defined only for timestamps. Applied for %s and %s" (show a) (show b)
 
-isEqual (ArraySpec indexBy (Just fields) _) (Object a) (Object b)
+isEqual (ArraySpec indexBy (Just fields) spec) (Object a) (Object b)
   | a == b = Right Equal
   | extractFields a == extractFields b = Right Similar
-  | otherwise = Right Different
-    where
-      extractFields obj = map (\f -> fromMaybe Null $ H.lookup f obj) fields
+  | otherwise = maximum <$> compareWithSpec a b spec
+  where
+    extractFields obj = map (\f -> fromMaybe Null $ H.lookup f obj) fields
+    compareWithSpec a b spec = zipWithM (isEqual spec) (extractFields a) (extractFields b)
 
 isEqual (ArraySpec indexBy Nothing spec) a@(Object _) b@(Object _) = isEqual spec a b
 isEqual (ArraySpec indexBy compareBy spec) a b = isEqual spec a b
